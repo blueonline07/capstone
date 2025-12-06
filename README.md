@@ -15,8 +15,8 @@ This approach allows for fast processing of low-density traffic while retaining 
 
 1.  Clone the repository:
     ```bash
-    git clone <repository-url>
-    cd <repository-name>
+    git clone https://github.com/blueonline07/capstone
+    cd capstone
     ```
 
 2.  Install the required Python packages:
