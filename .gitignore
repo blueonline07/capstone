@@ -1,7 +1,5 @@
 batch/
 output/
-SHA_model.pth
-yolov8n.pt
 .venv/
 .DS_Store
 __pycache__/

@@ -1,6 +1,3 @@
-ultralytics==8.3.10
-supervision==0.20.0
-opencv-python==4.10.0.84
-# Let pip resolve a compatible NumPy for your Python/pip platform
-numpy
-
+ultralytics
+fastapi[standard]
+torch
