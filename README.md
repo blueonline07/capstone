@@ -33,7 +33,7 @@ This approach allows for fast processing of low-density traffic while retaining 
 
 1.  Start the FastAPI server:
     ```bash
-    uvicorn main:app --reload
+    fastapi dev main.py
     ```
 
 2.  Send a POST request to the `/process` endpoint.
@@ -90,10 +90,3 @@ The application can be configured via environment variables. The following varia
 
 -   `APP_NAME`: The name of the application. Defaults to `"Traffic Volume API"`.
 -   `THRESHOLD`: The threshold for switching between the `FFNet` and YOLOv8 models. If the `FFNet` count is below this value, YOLOv8 is used. Defaults to `128`.
-
-To set an environment variable, you can use:
-
-```bash
-export THRESHOLD=100
-uvicorn main:app --reload
-```
