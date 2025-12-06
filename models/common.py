@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 from typing import List
 
+
 class SpeedEntry(BaseModel):
     time: str
     speed: float
+
 
 class Speed(BaseModel):
     count: int

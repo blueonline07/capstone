@@ -1,3 +1,5 @@
 ultralytics
 fastapi[standard]
 torch
+torchvision
+pydantic-settings

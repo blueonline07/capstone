@@ -2,9 +2,11 @@ from typing import List, Optional
 from pydantic import BaseModel
 from models.common import Speed
 
+
 class Frame(BaseModel):
     time: str
     image_ref: str
+
 
 class Request(BaseModel):
     camera_id: str
