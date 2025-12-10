@@ -6,7 +6,7 @@ from models.response import Response
 from config.settings import settings
 
 app = FastAPI()
-model = YOLO("yolov8n.pt")
+model = YOLO("yolo11n.pt")
 ffnet = FFNetWrapper("SHA_model.pth")
 classes = [1, 2, 3, 5, 7]
 

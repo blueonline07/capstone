@@ -14,20 +14,21 @@ class FFNetWrapper:
         self.model.eval()
 
     def predict(self, images: List[str]):
-        transform = transforms.Compose(
-            [
-                transforms.Resize((256, 256)),
-                transforms.ToTensor(),
-                transforms.Normalize(
-                    mean=[0.485, 0.456, 0.406],
-                    std=[0.229, 0.224, 0.225],
-                ),
-            ]
-        )
-        tensors = []
-        for image_path in images:
-            img = Image.open(image_path)
-            tensor = transform(img).to(device)
-            tensors.append(tensor)
-        batch = torch.stack(tensors)
-        return torch.sum(self.model(batch)[0])
+        with torch.no_grad():
+            transform = transforms.Compose(
+                [
+                    transforms.Resize((256, 256)),
+                    transforms.ToTensor(),
+                    transforms.Normalize(
+                        mean=[0.485, 0.456, 0.406],
+                        std=[0.229, 0.224, 0.225],
+                    ),
+                ]
+            )
+            tensors = []
+            for image_path in images:
+                img = Image.open(image_path)
+                tensor = transform(img).to(device)
+                tensors.append(tensor)
+            batch = torch.stack(tensors)
+            return torch.sum(self.model(batch)[0])

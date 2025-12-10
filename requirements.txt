@@ -3,3 +3,10 @@ fastapi[standard]
 torch
 torchvision
 pydantic-settings
+requests
+numpy
+tqdm
+
+requests
+numpy
+tqdm
