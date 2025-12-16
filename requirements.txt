@@ -6,7 +6,3 @@ pydantic-settings
 requests
 numpy
 tqdm
-
-requests
-numpy
-tqdm
