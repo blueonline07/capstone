@@ -34,6 +34,9 @@ def process_slot(args):
 
             # Run YOLO on frames
             image_refs = [frame.image_ref for frame in req.frames]
+            if not image_refs:
+                continue  # Skip if no images
+
             results = model(image_refs, classes=classes, verbose=False)
             vehicles_count = sum([len(r.boxes) for r in results])
 

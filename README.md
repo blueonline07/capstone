@@ -9,14 +9,14 @@ FastAPI application for counting vehicles in images using YOLO.
 
 ## Installation
 
-```bash
+    ```bash
 # Clone repository
-git clone https://github.com/blueonline07/capstone
-cd capstone
+    git clone https://github.com/blueonline07/capstone
+    cd capstone
 
 # Install dependencies
-pip install -r requirements.txt
-```
+    pip install -r requirements.txt
+    ```
 
 ## Usage
 
@@ -24,13 +24,13 @@ pip install -r requirements.txt
 
 Start the server:
 
-```bash
+    ```bash
 uvicorn main:app --reload
 ```
 
 Send POST request to `/process`:
 
-```bash
+    ```bash
 curl -X POST "http://127.0.0.1:8000/process" \
   -H "Content-Type: application/json" \
   -d '{
@@ -38,13 +38,13 @@ curl -X POST "http://127.0.0.1:8000/process" \
     "slot": "00:00:00",
     "generated_at": "2025-11-15T00:00:00",
     "duration_sec": 300,
-    "frames": [
+      "frames": [
       {"time": "2025-11-15T00:00:00", "image_ref": "path/to/image.jpg"}
     ],
     "speed": null,
     "weather": null
-  }'
-```
+    }'
+    ```
 
 ### Batch Processing
 
