@@ -12,12 +12,62 @@ import argparse
 import json
 from collections import defaultdict
 from tqdm import tqdm
-from multiprocessing import Pool, cpu_count
+from multiprocessing import Pool, cpu_count, Manager
+from datetime import datetime, timedelta
+
+
+def get_prev_vehicles_count(
+    prev_counts, slot_time: str, camera_id: str, output_dir: str, date: str
+):
+    """
+    Best-effort fallback helper:
+    1. Try previous slots from the same day (via in-memory shared store).
+    2. If none exist, fall back to the previous day's latest result for that camera.
+    """
+    # 1) Same-day previous slots from shared store
+    # prev_counts keys are tuples: (camera_id, slot_time)
+    candidates = [
+        (k_slot, v)
+        for (k_cam, k_slot), v in prev_counts.items()
+        if k_cam == camera_id and k_slot < slot_time
+    ]
+    if candidates:
+        # Pick the latest earlier slot
+        _, vehicles_count = max(candidates, key=lambda x: x[0])
+        return vehicles_count
+
+    # 2) No same-day history: look at previous day's outputs on disk
+    try:
+        curr_date = datetime.strptime(date, "%Y-%m-%d").date()
+    except ValueError:
+        # If date format is unexpected, give up on cross-day fallback
+        return None
+
+    prev_date = curr_date - timedelta(days=1)
+    prev_date_str = prev_date.isoformat()
+    prev_output_dir = Path(output_dir) / prev_date_str
+
+    if not prev_output_dir.exists():
+        return None
+
+    # Find latest slots from previous day (filenames are <slot_time>.npy)
+    prev_files = sorted(prev_output_dir.glob("*.npy"))
+    for prev_file in reversed(prev_files):
+        try:
+            prev_responses = np.load(prev_file, allow_pickle=True)
+            for r in prev_responses:
+                if r.get("camera_id") == camera_id:
+                    return r.get("vehicles_count")
+        except Exception:
+            # Ignore any corrupt/unreadable files and keep looking further back
+            continue
+
+    return None
 
 
 def process_slot(args):
     """Process a single slot across all nodes."""
-    slot_time, node_files, model_path, output_dir, date = args
+    slot_time, node_files, model_path, output_dir, date, prev_counts = args
 
     # Load model (each process gets its own model instance)
     model = YOLO(model_path, verbose=False)
@@ -32,13 +82,27 @@ def process_slot(args):
             with open(slot_file, "r") as f:
                 req = Request(**json.load(f))
 
-            # Run YOLO on frames
+            # Prepare images from frames
             image_refs = [frame.image_ref for frame in req.frames]
-            if not image_refs:
-                continue  # Skip if no images
 
-            results = model(image_refs, classes=classes, verbose=False)
-            vehicles_count = sum([len(r.boxes) for r in results])
+            if not image_refs:
+                # No images: try to reuse vehicles_count from previous slots/day for this camera
+                vehicles_count = get_prev_vehicles_count(
+                    prev_counts=prev_counts,
+                    slot_time=slot_time,
+                    camera_id=req.camera_id,
+                    output_dir=output_dir,
+                    date=date,
+                )
+                if vehicles_count is None:
+                    # Nothing to fall back to, keep old behavior and skip
+                    continue
+            else:
+                # Run YOLO on frames
+                results = model(image_refs, classes=classes, verbose=False)
+                vehicles_count = sum([len(r.boxes) for r in results])
+                # Update shared fallback store for this camera & slot
+                prev_counts[(req.camera_id, slot_time)] = vehicles_count
 
             # Create response
             response = Response(
@@ -107,9 +171,13 @@ def process_batch(
     output_date_dir = Path(output_dir) / date
     output_date_dir.mkdir(parents=True, exist_ok=True)
 
+    # Shared store for previous vehicles_count values across workers
+    manager = Manager()
+    prev_counts = manager.dict()
+
     # Prepare arguments for parallel processing
     tasks = [
-        (slot_time, node_files, model_path, output_dir, date)
+        (slot_time, node_files, model_path, output_dir, date, prev_counts)
         for slot_time, node_files in sorted(slots_by_time.items())
     ]
 
