@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from models.common import Speed
+from models.common import Speed, Weather
 
 
 class Frame(BaseModel):
@@ -15,4 +15,4 @@ class Request(BaseModel):
     duration_sec: int
     frames: List[Frame]
     speed: Optional[Speed]
-    weather: Optional[str]
+    weather: Optional[Weather]
